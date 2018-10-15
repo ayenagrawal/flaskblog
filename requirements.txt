@@ -1,0 +1,11 @@
+flask
+flask-SQLAlchemy
+flask-WTForms
+flask-login
+flask-bcrypt
+flask-mail
+PILLOW
+secrets
+uuid
+datetime
+os

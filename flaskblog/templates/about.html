@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block content %}
+	<h2>About Page</h2>
+	<div class="article-content" style="font-size: 110%"><!--article-content or content-section-->
+	    This project in under development stage.<br/> Please login using the credentials provided by clicking on <a href="{{url_for('users.login')}}">this</a><br/>or Register yourself using the <a href="{{url_for('users.register')}}">link</a>
+	</div>
+{% endblock content %}
