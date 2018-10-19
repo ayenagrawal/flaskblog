@@ -76,15 +76,21 @@ def account():
 @users.route('/forgot', methods=['GET', 'POST'])
 def forgot():
     form = ForgotForm()
+    nowminusone = datetime.now() - timedelta(days=1)
     if request.method == 'POST':
         if form.validate():
             user = User.query.filter_by(email=form.email.data).first()
             if not user:
                 flash('No data found for this email', 'danger')
-            else:
+            elif user:
                 res = Pwreset.query.filter_by(user_id=user.id).first()
                 if res and res.has_activated == False:
-                    flash('Link already sent to your email', 'warning')
+                    if res.datetime < nowminusone:
+                        db.session.delete(res)
+                        db.session.commit()
+                        flash('Link already sent and has expired!!! Please generate a new one', 'danger')
+                    else:
+                        flash('Link already sent to your email', 'warning')
                 else:
                     uid = uuid.uuid4()
                     res = Pwreset(reset_key=uid.hex, user_id=user.id)
@@ -108,13 +114,13 @@ def resetpw(token):
         return redirect(url_for('users.forgot'))
     else:
         if res.has_activated:
-            flash('link already used once!!! Please generate a new one.', 'danger')
+            flash('Link already used once!!! Please generate a new one.', 'danger')
             return redirect(url_for('users.forgot'))
         elif res.has_activated == False:
             if res.datetime < nowminusone:
                 res.has_activated = True
                 db.session.commit()
-                flash('link has been expired!!! Please request for a new reset link.', 'danger')
+                flash('Link has been expired!!! Please request for a new reset link.', 'danger')
                 return redirect(url_for('users.forgot'))
             else:
                 user = User.query.filter_by(email=res.user.email).first_or_404()
