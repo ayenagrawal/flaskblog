@@ -3,10 +3,12 @@ bandit==1.5.1
 bcrypt==3.1.4
 bleach==3.0.2
 blinker==1.4
+certifi==2018.10.15
 cffi==1.11.5
+chardet==3.0.4
 click==6.7
 DateTime==4.2
-django>=2.1.2
+Django==2.1.1
 Flask==1.0.2
 Flask-Bcrypt==0.7.1
 Flask-Login==0.4.1
@@ -17,6 +19,7 @@ Flask-SQLAlchemy==2.3.2
 Flask-WTF==0.14.2
 gitdb2==2.0.5
 GitPython==2.1.11
+idna==2.6
 image==1.5.25
 itsdangerous==0.24
 Jinja2==2.10
@@ -29,10 +32,12 @@ pycparser==2.18
 pymongo==3.7.1
 pytz==2018.5
 PyYAML==3.13
+requests==2.18.4
 six==1.11.0
 smmap2==2.0.5
 SQLAlchemy==1.2.11
 stevedore==1.30.0
+urllib3==1.22
 uuid==1.30
 webencodings==0.5.1
 Werkzeug==0.14.1
