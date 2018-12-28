@@ -73,6 +73,17 @@ def account():
     return render_template('account.html', title='Account', image_file=image_file, form=form)
 
 
+def sendmailfunction(user):
+    uid = uuid.uuid4()
+    res = Pwreset(reset_key=uid.hex, user_id=user.id)
+    db.session.add(res)
+    db.session.commit()
+    # email message part
+    msg = Message("Are you trying to reset your password? Here's how", sender='mailclient420@gmail.com', recipients=[user.email])
+    msg.body = "Please click on the URL below to reset your password:" + " URL here: " + (request.url.split('/forgot')[0]) + "/resetpw/" + uid.hex
+    mail.send(msg)
+
+
 @users.route('/forgot', methods=['GET', 'POST'])
 def forgot():
     form = ForgotForm()
@@ -83,24 +94,17 @@ def forgot():
             if not user:
                 flash('No data found for this email', 'danger')
             elif user:
-                res = Pwreset.query.filter_by(user_id=user.id).first()
-                if res and res.has_activated == False:
+                res = Pwreset.query.filter_by(user_id=user.id).filter_by(has_activated=False).first()
+                if not res:
+                    sendmailfunction(user)
+                    flash('Password reset link sent to your email !!!', 'success')
+                elif res:
                     if res.datetime < nowminusone:
                         db.session.delete(res)
                         db.session.commit()
                         flash('Link already sent and has expired!!! Please generate a new one', 'danger')
                     else:
                         flash('Link already sent to your email', 'warning')
-                else:
-                    uid = uuid.uuid4()
-                    res = Pwreset(reset_key=uid.hex, user_id=user.id)
-                    db.session.add(res)
-                    db.session.commit()
-                    # email message part
-                    msg = Message("Are you trying to reset your password? Here's how", sender='mailclient420@gmail.com', recipients=[user.email])
-                    msg.body = "Please click on the URL below to reset your password:" + " URL here: " + "http://localhost:5000/resetpw/" + uid.hex
-                    mail.send(msg)
-                    flash('Password reset link sent to your email !!!', 'success')
     return render_template('forgot.html', title='Forgot Password', form=form)
 
 
@@ -116,14 +120,14 @@ def resetpw(token):
         if res.has_activated:
             flash('Link already used once!!! Please generate a new one.', 'danger')
             return redirect(url_for('users.forgot'))
-        elif res.has_activated == False:
+        elif not res.has_activated:
             if res.datetime < nowminusone:
-                res.has_activated = True
+                db.session.delete(res)
                 db.session.commit()
                 flash('Link has been expired!!! Please request for a new reset link.', 'danger')
                 return redirect(url_for('users.forgot'))
-            else:
-                user = User.query.filter_by(email=res.user.email).first_or_404()
+            # else:
+                # user = User.query.filter_by(email=res.user.email).first_or_404()
     if request.method == 'POST':
         if form.validate():
             hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
